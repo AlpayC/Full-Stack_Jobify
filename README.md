@@ -6869,5 +6869,4 @@ const apiLimiter = rateLimiter({
 router.post('/register', apiLimiter, validateRegisterInput, register);
 router.post('/login', apiLimiter, validateLoginInput, login);
 ```
-#   F u l l - S t a c k _ J o b i f y  
  
