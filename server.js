@@ -1,6 +1,10 @@
+import "express-async-errors";
 import express from "express";
 import morgan from "morgan";
 import * as dotenv from "dotenv";
+import errorHandlerMiddleware from "./middlewares/errorHandlerMiddleware.js";
+import { body, validationResult } from "express-validator";
+
 dotenv.config();
 
 import { nanoid } from "nanoid";
@@ -14,6 +18,7 @@ if (process.env.NODE_ENV === "development") {
   app.use(morgan("dev"));
 }
 app.use("/api/v1/jobs", jobRouter);
+app.use(errorHandlerMiddleware);
 
 let jobs = [
   { id: nanoid(), company: "apple", position: "front-end" },
