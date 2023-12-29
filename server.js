@@ -62,7 +62,6 @@ app.post("/api/v1/jobs", (req, res) => {
     return res.status(400).json({ msg: "please provide company and position" });
   }
   const id = nanoid(10);
-  // console.log(id);
   const job = { id, company, position };
   jobs.push(job);
   res.status(200).json({ job });
@@ -111,7 +110,14 @@ app.delete("/api/v1/jobs/:id", (req, res) => {
 
   res.status(200).json({ msg: "job deleted" });
 });
+app.use("*", req, (res) => {
+  res.status(404).json({ msg: "not found" });
+});
 
+app.use((err, req, res, next) => {
+  console.log(err);
+  res.status(500).json({ msg: "something went wrong" });
+});
 const port = process.env.PORT || 5100;
 try {
   await mongoose.connect(process.env.MONGO_URL);
