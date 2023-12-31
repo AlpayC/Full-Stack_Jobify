@@ -1,128 +1,72 @@
-import "express-async-errors";
-import express from "express";
-import morgan from "morgan";
-import * as dotenv from "dotenv";
-import errorHandlerMiddleware from "./middlewares/errorHandlerMiddleware.js";
-import { body, validationResult } from "express-validator";
-
+import 'express-async-errors';
+import * as dotenv from 'dotenv';
 dotenv.config();
-
-import { nanoid } from "nanoid";
-
-import jobRouter from "./routers/jobRouter.js";
-
-import mongoose from "mongoose";
-
+import express from 'express';
 const app = express();
-if (process.env.NODE_ENV === "development") {
-  app.use(morgan("dev"));
+import morgan from 'morgan';
+import mongoose from 'mongoose';
+import cookieParser from 'cookie-parser';
+import cloudinary from 'cloudinary';
+import helmet from 'helmet';
+import mongoSanitize from 'express-mongo-sanitize';
+
+// routers
+import jobRouter from './routes/jobRouter.js';
+import authRouter from './routes/authRouter.js';
+import userRouter from './routes/userRouter.js';
+// public
+import { dirname } from 'path';
+import { fileURLToPath } from 'url';
+import path from 'path';
+
+// middleware
+import errorHandlerMiddleware from './middleware/errorHandlerMiddleware.js';
+import { authenticateUser } from './middleware/authMiddleware.js';
+
+cloudinary.config({
+  cloud_name: process.env.CLOUD_NAME,
+  api_key: process.env.CLOUD_API_KEY,
+  api_secret: process.env.CLOUD_API_SECRET,
+});
+
+const __dirname = dirname(fileURLToPath(import.meta.url));
+if (process.env.NODE_ENV === 'development') {
+  app.use(morgan('dev'));
 }
-app.use("/api/v1/jobs", jobRouter);
+app.use(express.static(path.resolve(__dirname, './client/dist')));
+app.use(cookieParser());
+app.use(express.json());
+app.use(helmet());
+app.use(mongoSanitize());
+
+app.get('/', (req, res) => {
+  res.send('Hello World');
+});
+
+app.get('/api/v1/test', (req, res) => {
+  res.json({ msg: 'test route' });
+});
+
+app.use('/api/v1/jobs', authenticateUser, jobRouter);
+app.use('/api/v1/users', authenticateUser, userRouter);
+app.use('/api/v1/auth', authRouter);
+
+app.get('*', (req, res) => {
+  res.sendFile(path.resolve(__dirname, './client/dist', 'index.html'));
+});
+
+app.use('*', (req, res) => {
+  res.status(404).json({ msg: 'not found' });
+});
+
 app.use(errorHandlerMiddleware);
 
-let jobs = [
-  { id: nanoid(), company: "apple", position: "front-end" },
-  { id: nanoid(), company: "google", position: "back-end" },
-];
-
-app.get("/api/v1/jobs", (req, res) => {
-  res.status(200).json({ jobs });
-});
-app.use(express.json());
-app.use(morgan("dev"));
-
-app.use("*", (req, res) => {
-  res.status(404).json({ msg: "not found" });
-});
-
-app.use((err, req, res, next) => {
-  console.log(err);
-  res.status(500).json({ msg: "something went wrong" });
-});
-app.post("/", (req, res) => {
-  console.log(req);
-
-  res.json({ message: "Data received", data: req.body });
-});
-
-app.get("/", (req, res) => {
-  res.send("Hello World");
-});
-
-// GET ALL JOBS
-app.get("/api/v1/jobs", (req, res) => {
-  // console.log(jobss);
-  res.status(200).json({ jobs });
-});
-
-// CREATE JOB
-app.post("/api/v1/jobs", (req, res) => {
-  const { company, position } = req.body;
-  if (!company || !position) {
-    return res.status(400).json({ msg: "please provide company and position" });
-  }
-  const id = nanoid(10);
-  const job = { id, company, position };
-  jobs.push(job);
-  res.status(200).json({ job });
-});
-
-// GET SINGLE JOB
-
-app.get("/api/v1/jobs/:id", (req, res) => {
-  const { id } = req.params;
-  const job = jobs.find((job) => job.id === id);
-  if (!job) {
-    throw new Error("no job with that id");
-    return res.status(404).json({ msg: `no job with id ${id}` });
-  }
-  res.status(200).json({ job });
-});
-
-// EDIT JOB
-
-app.patch("/api/v1/jobs/:id", (req, res) => {
-  const { company, position } = req.body;
-  if (!company || !position) {
-    return res.status(400).json({ msg: "please provide company and position" });
-  }
-  const { id } = req.params;
-  const job = jobs.find((job) => job.id === id);
-  if (!job) {
-    return res.status(404).json({ msg: `no job with id ${id}` });
-  }
-
-  job.company = company;
-  job.position = position;
-  res.status(200).json({ msg: "job modified", job });
-});
-
-// DELETE JOB
-
-app.delete("/api/v1/jobs/:id", (req, res) => {
-  const { id } = req.params;
-  const job = jobs.find((job) => job.id === id);
-  if (!job) {
-    return res.status(404).json({ msg: `no job with id ${id}` });
-  }
-  const newJobs = jobs.filter((job) => job.id !== id);
-  jobs = newJobs;
-
-  res.status(200).json({ msg: "job deleted" });
-});
-app.use("*", req, (res) => {
-  res.status(404).json({ msg: "not found" });
-});
-
-app.use((err, req, res, next) => {
-  console.log(err);
-  res.status(500).json({ msg: "something went wrong" });
-});
 const port = process.env.PORT || 5100;
+
 try {
   await mongoose.connect(process.env.MONGO_URL);
   app.listen(port, () => {
-    console.log(`server running on PORT ${port}....`);
+    console.log(`server running on PORT ${port}...`);
   });
 } catch (error) {
   console.log(error);
