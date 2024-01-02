@@ -6,22 +6,20 @@ JobTracker is a full-stack web application built with React, Node.js, and Expres
 
 ## Table of Contents
 
-- [Screenshots](#screenshots)
+- [Screenshot](#screenshots)
 - [Live Demo](#live-demo)
 - [Features](#features)
 - [Technologies Used](#technologies-used)
 - [Getting Started](#getting-started)
 - [Course Landing Page](#course-landing-page)
-- [Contributing](#contributing)
-- [License](#license)
 
-## Screenshots
+## Screenshot
 
-[View Screenshots](screenshots/)
+![View Screenshot](preview.gif)
 
 ## Live Demo
 
-[JobTracker Project](https://github.com/yourusername/jobtracker)
+[JobTracker Project](https://jobify.alpaycelik.dev/)
 
 ## Features
 
@@ -103,16 +101,21 @@ JobTracker is a full-stack web application built with React, Node.js, and Expres
 3. Set up a database and configure connection strings.
 4. Run the application locally.
 
-For detailed instructions, refer to the [Installation Guide](docs/installation.md).
+### Environment variables
+
+1. Place your <code>.env</code> file in the root directory with the following variables
+
+```
+MONGO_URL=
+NODE_ENV="development" or "production"
+PORT=5100
+JWT_SECRET=
+JWT_EXPIRES_IN=1d
+CLOUD_NAME=
+CLOUD_API_KEY=
+CLOUD_API_SECRET=
+```
 
 ## Course Landing Page
 
-Explore the Udemy course that inspired this project on the [JobTracker Udemy Course Landing Page](https://www.udemy.com/course/your-course-slug/).
-
-## Contributing
-
-We welcome contributions! To contribute to JobTracker, please follow our [Contribution Guidelines](CONTRIBUTING.md).
-
-## License
-
-This project is licensed under the [MIT License](LICENSE).
+Explore the Udemy course that inspired this project on the [JobTracker Udemy Course Landing Page](https://www.udemy.com/course/mern-stack-course-mongodb-express-react-and-nodejs/).
